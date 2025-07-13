@@ -1,60 +1,84 @@
 import { useState } from "react";
 
-function App() {
+export default function App() {
   const [clientName, setClientName] = useState("");
   const [message, setMessage] = useState("");
+  const [profileUrl, setProfileUrl] = useState("");
   const [status, setStatus] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const sendRegularMessage = async () => {
     try {
-      const response = await fetch("/api/send-message", {
+      const res = await fetch("/api/send-message", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ clientName, message }),
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        setStatus(data.message);
-        setClientName("");
-        setMessage("");
-      } else {
-        setStatus(data.error || "משהו השתבש...");
-      }
+      const data = await res.json();
+      setStatus(data.message || data.error);
     } catch (err) {
       console.error(err);
-      setStatus("שגיאה בשרת");
+      setStatus("שגיאה בשליחה");
+    }
+  };
+
+  const sendLinkedinMessage = async () => {
+    try {
+      const res = await fetch("/api/send-linkedin-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileUrl, message }),
+      });
+
+      const data = await res.json();
+      setStatus(data.message || data.error);
+    } catch (err) {
+      console.error(err);
+      setStatus("שגיאה בלינקדאין");
     }
   };
 
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h2>📬 Winbox Outreach Dashboard</h2>
-      <form onSubmit={handleSubmit} style={{ marginTop: "1rem" }}>
-        <input
-          type="text"
-          placeholder="שם לקוח"
-          value={clientName}
-          onChange={(e) => setClientName(e.target.value)}
-          required
-          style={{ display: "block", marginBottom: "1rem", width: "100%" }}
-        />
-        <textarea
-          placeholder="הודעה..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          required
-          style={{ display: "block", marginBottom: "1rem", width: "100%" }}
-        />
-        <button type="submit">שלח</button>
-      </form>
+      <h2>Winbox Outreach Dashboard</h2>
+
+      {/* טופס רגיל */}
+      <h4>שליחת הודעה רגילה:</h4>
+      <input
+        type="text"
+        placeholder="שם לקוח"
+        value={clientName}
+        onChange={(e) => setClientName(e.target.value)}
+        style={{ display: "block", marginBottom: "1rem", width: "100%" }}
+      />
+      <textarea
+        placeholder="הודעה..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        style={{ display: "block", marginBottom: "1rem", width: "100%" }}
+      />
+      <button onClick={sendRegularMessage}>שלח הודעה רגילה</button>
+
+      <hr style={{ margin: "2rem 0" }} />
+
+      {/* טופס לינקדאין */}
+      <h4>שליחת הודעה ב־LinkedIn:</h4>
+      <input
+        type="text"
+        placeholder="קישור לפרופיל לינקדאין"
+        value={profileUrl}
+        onChange={(e) => setProfileUrl(e.target.value)}
+        style={{ display: "block", marginBottom: "1rem", width: "100%" }}
+      />
+      <textarea
+        placeholder="הודעה..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        style={{ display: "block", marginBottom: "1rem", width: "100%" }}
+      />
+      <button onClick={sendLinkedinMessage}>שלח בלינקדאין</button>
+
       {status && <p style={{ marginTop: "1rem" }}>{status}</p>}
     </div>
   );
 }
-
-export default App;
