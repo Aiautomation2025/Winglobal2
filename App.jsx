@@ -1,21 +1,58 @@
-import React from 'react';
+import { useState } from "react";
 
 function App() {
-  return (
-    <div style={{ fontFamily: 'Arial, sans-serif', padding: '2rem' }}>
-      <h1 style={{ color: '#333' }}>📣 Winbox Outreach Dashboard</h1>
-      <p>Welcome! Use this panel to send automated outreach messages.</p>
+  const [clientName, setClientName] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
 
-      <div style={{ marginTop: '2rem', padding: '1rem', border: '1px solid #ccc', borderRadius: '6px' }}>
-        <h2>📨 Send a New Message</h2>
-        <form>
-          <input type="text" placeholder="Client name" style={{ padding: '8px', width: '100%', marginBottom: '10px' }} />
-          <textarea placeholder="Message..." style={{ padding: '8px', width: '100%', height: '100px', marginBottom: '10px' }} />
-          <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '4px' }}>
-            Send
-          </button>
-        </form>
-      </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("/api/send-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ clientName, message }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setStatus(data.message);
+        setClientName("");
+        setMessage("");
+      } else {
+        setStatus(data.error || "משהו השתבש...");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("שגיאה בשרת");
+    }
+  };
+
+  return (
+    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
+      <h2>📬 Winbox Outreach Dashboard</h2>
+      <form onSubmit={handleSubmit} style={{ marginTop: "1rem" }}>
+        <input
+          type="text"
+          placeholder="שם לקוח"
+          value={clientName}
+          onChange={(e) => setClientName(e.target.value)}
+          required
+          style={{ display: "block", marginBottom: "1rem", width: "100%" }}
+        />
+        <textarea
+          placeholder="הודעה..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          required
+          style={{ display: "block", marginBottom: "1rem", width: "100%" }}
+        />
+        <button type="submit">שלח</button>
+      </form>
+      {status && <p style={{ marginTop: "1rem" }}>{status}</p>}
     </div>
   );
 }
