@@ -1,18 +1,14 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method === "POST") {
+    const body = req.body;
 
-  try {
-    const event = req.body;
+    console.log("📩 Webhook received:", body);
 
-    console.log('📩 Webhook received:', event);
+    // Optional: handle the incoming webhook data here
 
-    // You can add logic here, like saving to database or triggering other services
-
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('❌ Error handling webhook:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    res.status(200).json({ message: "Received successfully" });
+  } else {
+    res.setHeader("Allow", ["POST"]);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
